@@ -1,9 +1,12 @@
+from json import tool
+from cv2 import sort
 import streamlit as st
 from datetime import datetime
 import pandas as pd
 import preprocessor
 import helper
 from PIL import Image
+import altair as alt
 
 img = Image.open('Data-Analysis-256.png')
 
@@ -26,9 +29,9 @@ if uploaded_file is not None:
      user_list.insert(0, 'All')
      
 
-     selected_user =  st.sidebar.selectbox("Show statistics of", user_list)
+     selected_user =  st.sidebar.selectbox("Show Statistics of", user_list)
 
-     if(st.sidebar.button("Show statistics")):
+     if(st.sidebar.button("Show Statistics")):
 
          number_of_messages, words, number_of_media, modified_dataset, links = helper.fetch_stats(selected_user, dataset, file_name)
          
@@ -52,4 +55,18 @@ if uploaded_file is not None:
              st.header("Total Links")
              st.title(len(links))
 
-     
+
+         if selected_user == "All":
+            st.title('Most Active Users')
+            active = helper.most_active_users(dataset)
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                pp = (alt.Chart(active).mark_bar().encode(
+                    x='Count',
+                    y=alt.Y('User', sort="-x"),
+                    tooltip=['User', 'Count']
+              ))
+                
+                st.altair_chart(pp, use_container_width=True)

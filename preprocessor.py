@@ -72,7 +72,8 @@ def preprocess(data):
     compiledstarting = pd.to_datetime(maxstartingdate, format='%m/%d/%y')
     compiledending = pd.to_datetime(maxendingdate, format='%m/%d/%y')   
 
-    startdate = st.date_input("Select starting date",key = 'start', min_value=(compiledstarting), max_value=(compiledending),value=(compiledstarting))
-    endingdate = st.date_input("Select ending date", key = 'end', min_value=(startdate), max_value=(compiledending), value=(compiledending))
+    with st.expander("Enter Starting and Ending Dates"):
+        startdate = st.date_input("Select Starting Date",key = 'start', min_value=(compiledstarting), max_value=(compiledending),value=(compiledstarting))
+        endingdate = st.date_input("Select Ending Date", key = 'end', min_value=(startdate), max_value=(compiledending), value=(compiledending))
 
     return dataset

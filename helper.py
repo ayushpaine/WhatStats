@@ -1,6 +1,7 @@
 import numpy as np
 import streamlit as st
 from urlextract import URLExtract
+import pandas as pd
 
 extract = URLExtract()
 
@@ -44,7 +45,16 @@ def fetch_stats(selected_user, dataset, file_name):
         for message in modified_dataset['message']:
             links.extend(extract.find_urls(message))
 
-        st.title("Statistics for"+ " " + selected_user +" "+ "in chat with" + " " + file_name[19:-4])
+        st.title("Statistics for"+ " " + selected_user +" "+ "in Chat with" + " " + file_name[19:-4])
 
         return number_of_messages, words, number_of_media, modified_dataset, links
+
+def most_active_users(dataset):
+    uni = pd.DataFrame(dataset['user'].value_counts())
+    uni.rename(columns = {'user': 'Count'}, inplace = True)
+    uni['User'] = uni.index
+    uni.reset_index(drop = True)
+    uni.sort_values(by = 'Count', ascending = False, inplace = True)
+
+    return uni
         
