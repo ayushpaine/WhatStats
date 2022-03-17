@@ -1,9 +1,11 @@
 import re
 import pandas as pd
 import numpy as np
-from  datetime import datetime
+from datetime import datetime
 import streamlit as st
 
+
+@st.cache
 def preprocess(data):
     patternAMPM = '\d{1,2}/\d{1,2}/\d{2,4},\s\d{1,2}:\d{2}\s\w{2}\s-\s'
     pattern247 = '\d{1,2}/\d{1,2}/\d{2,4},\s\d{1,2}:\d{2}\s-\s'
@@ -15,10 +17,12 @@ def preprocess(data):
     dates247 = re.findall(pattern247, data)
 
     datesto247 = []
+
     def convertto247(dates):
         dateL = ''
         for date in dates:
-            dateL = (datetime.strptime(date, '%m/%d/%y, %I:%M %p - ').strftime('%m/%d/%y, %H:%M - '))
+            dateL = (datetime.strptime(
+                date, '%m/%d/%y, %I:%M %p - ').strftime('%m/%d/%y, %H:%M - '))
             datesto247.append(dateL)
 
     messages = ''
@@ -36,8 +40,8 @@ def preprocess(data):
 
     dates = datesto247
 
-    dataset = pd.DataFrame({'user_message':messages, 'message_date':dates})
-    dataset.rename(columns = {'message_date' : 'date'}, inplace = True)
+    dataset = pd.DataFrame({'user_message': messages, 'message_date': dates})
+    dataset.rename(columns={'message_date': 'date'}, inplace=True)
 
     users = []
     messages = []
@@ -53,7 +57,7 @@ def preprocess(data):
 
     dataset['user'] = users
     dataset['message'] = messages
-    dataset.drop(columns = ['user_message'], inplace=True)
+    dataset.drop(columns=['user_message'], inplace=True)
 
     dataset['date'] = dataset['date'].apply(lambda x: x[0:-3])
     dataset['year'] = pd.to_datetime(dataset['date']).dt.year
@@ -70,10 +74,22 @@ def preprocess(data):
     maxendingdate = dataset['date'].iloc[-1][0:8]
 
     compiledstarting = pd.to_datetime(maxstartingdate, format='%m/%d/%y')
-    compiledending = pd.to_datetime(maxendingdate, format='%m/%d/%y')   
+    compiledending = pd.to_datetime(maxendingdate, format='%m/%d/%y')
 
     with st.expander("Enter Starting and Ending Dates"):
-        startdate = st.date_input("Select Starting Date",key = 'start', min_value=(compiledstarting), max_value=(compiledending),value=(compiledstarting))
-        endingdate = st.date_input("Select Ending Date", key = 'end', min_value=(startdate), max_value=(compiledending), value=(compiledending))
+        startdate = st.date_input("Select Starting Date", key='start', min_value=(
+            compiledstarting), max_value=(compiledending), value=(compiledstarting))
+        endingdate = st.date_input("Select Ending Date", key='end', min_value=(
+            startdate), max_value=(compiledending), value=(compiledending))
 
-    return dataset
+    uni = pd.DataFrame(dataset['user'].value_counts())
+
+    uni.rename(columns={'user': 'Count'}, inplace=True)
+    uni['User'] = uni.index
+    uni['User_tooltip'] = uni['User']
+    uni.reset_index(drop=True)
+    uni['User'] = uni['User'].apply(
+        lambda x: x[:18] + ".." if len(x) > 18 else x)
+    uni.sort_values(by='Count', ascending=True, inplace=True)
+
+    return dataset, uni

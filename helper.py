@@ -1,7 +1,9 @@
+from matplotlib.pyplot import bar
 import numpy as np
 import streamlit as st
 from urlextract import URLExtract
 import pandas as pd
+import plotly.express as px
 
 extract = URLExtract()
 
@@ -15,7 +17,6 @@ def fetch_stats(selected_user, dataset, file_name):
         
         for message in dataset['message']:
             words.extend(message.split())
-
         modified_dataset = dataset
 
         links = []
@@ -31,7 +32,6 @@ def fetch_stats(selected_user, dataset, file_name):
         user_dataset = dataset[dataset['user'] == selected_user]
         number_of_messages = user_dataset.shape[0]
         number_of_media = user_dataset[user_dataset['message'] == '<Media omitted>'].shape[0]
-        
         words = []
 
         for message in user_dataset['message']:
@@ -48,13 +48,20 @@ def fetch_stats(selected_user, dataset, file_name):
         st.title("Statistics for"+ " " + selected_user +" "+ "in Chat with" + " " + file_name[19:-4])
 
         return number_of_messages, words, number_of_media, modified_dataset, links
-
-def most_active_users(dataset):
-    uni = pd.DataFrame(dataset['user'].value_counts())
-    uni.rename(columns = {'user': 'Count'}, inplace = True)
-    uni['User'] = uni.index
-    uni.reset_index(drop = True)
-    uni.sort_values(by = 'Count', ascending = False, inplace = True)
-
-    return uni
         
+
+
+def plot_bar_graph(uni, total_rank):
+    fig = px.bar(uni.iloc[0:total_rank], x='Count',
+                         y='User', text='Count', height = 850, width = 1300, custom_data = ['User_tooltip', 'Count'])
+    
+    fig.update_traces(width = 1)
+    fig.update_traces(textfont_size=12, textangle=0, textposition="auto", cliponaxis=False)
+    fig.update_layout(hovermode="y unified")
+    fig.update_yaxes(tickangle=-35)
+    fig.update_xaxes(showticklabels=False)
+    fig.update_yaxes(ticksuffix="  ", automargin=False, tickmode = 'linear')
+    fig.update_layout(yaxis_title_text="")
+    fig.update_layout(xaxis_title_text="")
+    fig.update_layout(margin=dict(l= 100, r=0, t=30, b=50))
+    st.plotly_chart(fig, use_container_width=True)

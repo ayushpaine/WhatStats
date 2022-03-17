@@ -11,7 +11,8 @@ pandas = "*"
 datetime = "*"
 numpy = "*"
 urlextract = "*"
-altair = "*"
+plotly = "*"
+cufflinks = "*"
 
 [dev-packages]
 
