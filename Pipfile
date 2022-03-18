@@ -13,6 +13,7 @@ numpy = "*"
 urlextract = "*"
 plotly = "*"
 cufflinks = "*"
+wordcloud = "*"
 
 [dev-packages]
 

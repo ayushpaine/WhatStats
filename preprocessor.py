@@ -1,14 +1,16 @@
+from cmath import nan
 import re
+from time import strftime
 import pandas as pd
 import numpy as np
 from datetime import datetime
 import streamlit as st
 
 
-@st.cache
 def preprocess(data):
     patternAMPM = '\d{1,2}/\d{1,2}/\d{2,4},\s\d{1,2}:\d{2}\s\w{2}\s-\s'
     pattern247 = '\d{1,2}/\d{1,2}/\d{2,4},\s\d{1,2}:\d{2}\s-\s'
+    pattern_remove_changed = ' changed the '
 
     messagesAMPM = re.split(patternAMPM, data)
     messages247 = re.split(pattern247, data)
@@ -59,6 +61,8 @@ def preprocess(data):
     dataset['message'] = messages
     dataset.drop(columns=['user_message'], inplace=True)
 
+    dataset = dataset.loc[~dataset['user'].str.contains(pattern_remove_changed)]
+
     dataset['date'] = dataset['date'].apply(lambda x: x[0:-3])
     dataset['year'] = pd.to_datetime(dataset['date']).dt.year
     dataset['month'] = pd.to_datetime(dataset['date']).dt.month_name()
@@ -81,14 +85,21 @@ def preprocess(data):
             compiledstarting), max_value=(compiledending), value=(compiledstarting))
         endingdate = st.date_input("Select Ending Date", key='end', min_value=(
             startdate), max_value=(compiledending), value=(compiledending))
+    
+    
+    startingdate_check = datetime.strptime(str(startdate), '%Y-%m-%d').strftime('%m/%d/%y')
+    endingdate_check = datetime.strptime(str(endingdate), '%Y-%m-%d').strftime('%m/%d/%y')
+
+    dataset = dataset[dataset['date'].apply(lambda x: datetime.strptime(x[0:8], '%m/%d/%y').strftime('%m/%d/%y') >= startingdate_check)]
+    dataset = dataset[dataset['date'].apply(lambda x: datetime.strptime(x[0:8], '%m/%d/%y').strftime('%m/%d/%y') <= endingdate_check)]
 
     uni = pd.DataFrame(dataset['user'].value_counts())
 
     uni.rename(columns={'user': 'Count'}, inplace=True)
     uni['User'] = uni.index
-    uni['User_tooltip'] = uni['User']
+    uni['User_short'] = uni['User']
     uni.reset_index(drop=True)
-    uni['User'] = uni['User'].apply(
+    uni['User_short'] = uni['User_short'].apply(
         lambda x: x[:18] + ".." if len(x) > 18 else x)
     uni.sort_values(by='Count', ascending=True, inplace=True)
 
