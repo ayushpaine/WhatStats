@@ -55,6 +55,7 @@ def fetch_stats(selected_user, dataset, file_name):
 
 
 def plot_bar_graph(uni, most_active_user_count):
+    
     fig = px.bar(uni.iloc[0:most_active_user_count], x='Count',
                          y='User_short', text='Count', height = 850, width = 1300, hover_data = {
                              'User_short': False,
@@ -72,22 +73,35 @@ def plot_bar_graph(uni, most_active_user_count):
     fig.update_layout(margin=dict(l= 100, r=0, t=30, b=50))
     st.plotly_chart(fig, use_container_width=True)
 
-def most_used_words(selected_user, store, words, most_used_msg_count):
+def most_used_words(selected_user, store):
 
     if selected_user != 'All':
         store = store[store['user'] == selected_user]
-   
-    if(most_used_msg_count > len(words)):
-        most_used_msg_count = len(words)
+    
+    stop = open('./helpers/stopwords.txt', 'r')
+    stopwords = stop.read()
 
-    most_common_words = pd.DataFrame(Counter(words).most_common(most_used_msg_count))
+    words_count = []
+
+    for message in store['message']:
+        for word in message.split():
+            if word not in stopwords:
+                words_count.append(word)
+            
+    most_common_words = pd.DataFrame(Counter(words_count).most_common(len(words_count)))
     most_common_words.columns = ["Word", "Count"]
 
-    return most_common_words
+    return most_common_words, words_count
         
 def find_max_word_count(words_count):
+
     if len(words_count) > 100:
         return 100
     else :
         return len(words_count)
 
+def most_common_words_input_restricted(most_common_words, most_used_msg_count):
+
+    most_common_words = most_common_words.iloc[0:most_used_msg_count]
+
+    return most_common_words

@@ -22,19 +22,21 @@ if uploaded_file is not None:
 
     bytes_data = uploaded_file.getvalue()
     data = bytes_data.decode('utf-8')
-    dataset, uni, store, words_count = preprocessor.preprocess(data)
+    dataset, uni, store = preprocessor.preprocess(data)
 
     user_list = dataset['user'].unique().tolist()
     user_list.sort()
     user_list.insert(0, 'All')
 
-    most_used_msg_count = st.slider('Enter Number of Most Used Words to be Displayed', min_value = 1, max_value = helper.find_max_word_count(words_count), value = int(helper.find_max_word_count(words_count)/3))
-    st.write(most_used_msg_count)
+    selected_user = st.sidebar.selectbox("Show Statistics of", user_list)
 
-    most_active_user_count = st.slider('Enter Number of Most Active Users to be Displayed', min_value = 1, max_value = len(uni), value = int(len(uni)/2))
+    most_common_words, words_count = helper.most_used_words(selected_user, store)
+
+    most_active_user_count = st.slider("Enter Number of Most Active Users to be Displayed(When 'All' is Selected)", min_value = 1, max_value = len(uni), value = int(len(uni)/2))
     st.write(most_active_user_count)  
 
-    selected_user = st.sidebar.selectbox("Show Statistics of", user_list)
+    most_used_msg_count = st.slider("Enter Number of Most Used Words to be Displayed", min_value = 1, max_value = helper.find_max_word_count(words_count), value = int(helper.find_max_word_count(words_count)/3))
+    st.write(most_used_msg_count)
 
     if(st.sidebar.button("Show Statistics")):
 
@@ -42,6 +44,8 @@ if uploaded_file is not None:
             selected_user, dataset, file_name)
 
         st.write(modified_dataset.astype('object'))
+
+        most_common_words = helper.most_common_words_input_restricted(most_common_words, most_used_msg_count)
 
         col11, col12, col13, col14, col21 = st.columns((1.25,1,1,1,1))
        
@@ -69,8 +73,6 @@ if uploaded_file is not None:
             st.title('Most Active Users')
 
             helper.plot_bar_graph(uni, most_active_user_count)
-
-        most_common_words = helper.most_used_words(selected_user, store, words_count, most_used_msg_count)
 
         st.title("Most Common Words")        
         st.dataframe(most_common_words)
