@@ -100,7 +100,23 @@ def preprocess(data):
     uni['User_short'] = uni['User']
     uni.reset_index(drop=True)
     uni['User_short'] = uni['User_short'].apply(
-        lambda x: x[:18] + ".." if len(x) > 18 else x)
+        lambda x: x[:18] + "..." if len(x) > 18 else x)
     uni.sort_values(by='Count', ascending=True, inplace=True)
 
-    return dataset, uni
+    stop = open('./helpers/stopwords.txt', 'r')
+    stopwords = stop.read()
+    
+    store = dataset.copy()
+
+    store = dataset[dataset['message'] != '<Media omitted>']
+    store = store[store['user'] != 'group_notification']
+
+    words_count = []
+    store['message'] = store['message'].str.lower()
+
+    for message in store['message']:
+        for word in message.split():
+            if word not in stopwords:
+                words_count.append(word)
+
+    return dataset, uni, store, words_count

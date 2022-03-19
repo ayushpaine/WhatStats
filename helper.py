@@ -1,9 +1,12 @@
 import numpy as np
+from sklearn import datasets
 import streamlit as st
 from urlextract import URLExtract
 import plotly.express as px
-from wordcloud import WordCloud
+from wordcloud import WordCloud, STOPWORDS
 from PIL import Image
+from collections import Counter
+import pandas as pd
 
 extract = URLExtract()
 
@@ -51,8 +54,8 @@ def fetch_stats(selected_user, dataset, file_name):
         
 
 
-def plot_bar_graph(uni, total_rank):
-    fig = px.bar(uni.iloc[0:total_rank], x='Count',
+def plot_bar_graph(uni, most_active_user_count):
+    fig = px.bar(uni.iloc[0:most_active_user_count], x='Count',
                          y='User_short', text='Count', height = 850, width = 1300, hover_data = {
                              'User_short': False,
                              'User': True,
@@ -69,17 +72,22 @@ def plot_bar_graph(uni, total_rank):
     fig.update_layout(margin=dict(l= 100, r=0, t=30, b=50))
     st.plotly_chart(fig, use_container_width=True)
 
-def gen_wordcloud(selected_user, dataset):
-    if selected_user != "All":
-        user_dataset = dataset[dataset['user'] == selected_user]
-    else:
-        user_dataset = dataset
-    userpp = user_dataset['user'].value_counts().todict()
-    custom_mask = np.array(Image.open("cloud.png"))
-    wc = WordCloud(mask=custom_mask, background_color="white",
-            max_words=2000, max_font_size=256,
-            random_state=42)
-    dataset_wc = wc.generate_from_frequencies(dict(' '.join(userpp['message'])))
+def most_used_words(selected_user, store, words, most_used_msg_count):
 
-    return dataset_wc
+    if selected_user != 'All':
+        store = store[store['user'] == selected_user]
+   
+    if(most_used_msg_count > len(words)):
+        most_used_msg_count = len(words)
+
+    most_common_words = pd.DataFrame(Counter(words).most_common(most_used_msg_count))
+    most_common_words.columns = ["Word", "Count"]
+
+    return most_common_words
         
+def find_max_word_count(words_count):
+    if len(words_count) > 100:
+        return 100
+    else :
+        return len(words_count)
+

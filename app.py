@@ -2,14 +2,17 @@ import streamlit as st
 import preprocessor
 import helper
 from PIL import Image
-from helper import *
+import matplotlib.pyplot as plt
 
-img = Image.open('Data-Analysis-256.png')
+img = Image.open('./images/dataanalysis.png')
 
 st.set_page_config(
     layout="wide", page_title="WhatStats - Stats for your WhatsApp chats", page_icon=img)
 
-st.sidebar.title("WhatsApp Chat Statistics")
+st.sidebar.image('./images/whatsapplogo.png', width=100)
+st.sidebar.markdown(
+        '# **WhatStats**', unsafe_allow_html=True
+)
 
 uploaded_file = st.sidebar.file_uploader("Choose a file")
 
@@ -19,11 +22,17 @@ if uploaded_file is not None:
 
     bytes_data = uploaded_file.getvalue()
     data = bytes_data.decode('utf-8')
-    dataset, uni = preprocessor.preprocess(data)
+    dataset, uni, store, words_count = preprocessor.preprocess(data)
 
     user_list = dataset['user'].unique().tolist()
     user_list.sort()
     user_list.insert(0, 'All')
+
+    most_used_msg_count = st.slider('Enter Number of Most Used Words to be Displayed', min_value = 1, max_value = helper.find_max_word_count(words_count), value = int(helper.find_max_word_count(words_count)/3))
+    st.write(most_used_msg_count)
+
+    most_active_user_count = st.slider('Enter Number of Most Active Users to be Displayed', min_value = 1, max_value = len(uni), value = int(len(uni)/2))
+    st.write(most_active_user_count)  
 
     selected_user = st.sidebar.selectbox("Show Statistics of", user_list)
 
@@ -34,33 +43,40 @@ if uploaded_file is not None:
 
         st.write(modified_dataset.astype('object'))
 
-        col1, col2, col3, col4 = st.columns(4)
-
-        with col1:
+        col11, col12, col13, col14, col21 = st.columns((1.25,1,1,1,1))
+       
+        with col11:
             st.header("Total Messages")
             st.title(number_of_messages)
 
-        with col2:
+        with col12:
             st.header("Total Words")
             st.title(len(words))
 
-        with col3:
+        with col13:
             st.header("Total Media")
             st.title(number_of_media)
 
-        with col4:
+        with col14:
             st.header("Total Links")
             st.title(len(links))
+       
+        with col21:
+            st.header("Total letters")
+            st.title(sum(len(i) for i in words))
 
         if selected_user == "All":
             st.title('Most Active Users')
-            
-            curr = len(uni["User"])
 
-            plot_bar_graph(uni, curr)
+            helper.plot_bar_graph(uni, most_active_user_count)
+
+        most_common_words = helper.most_used_words(selected_user, store, words_count, most_used_msg_count)
+
+        st.title("Most Common Words")        
+        st.dataframe(most_common_words)
+
+
         
-        dataset_wc = helper.gen_wordcloud(selected_user, dataset)
-        st.image(dataset_wc)
            
             
             
