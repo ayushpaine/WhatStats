@@ -58,7 +58,7 @@ def fetch_stats(selected_user, dataset, file_name):
 def plot_bar_graph(uni, most_active_user_count):
     
     fig = px.bar(uni.iloc[0:most_active_user_count], x='Count',
-                         y='User_short', text='Count', height = 850, width = 1300, hover_data = {
+                         y='User_short', text='Count', height = 900, width = 1300, hover_data = {
                              'User_short': False,
                              'User': True,
                              'Count': True

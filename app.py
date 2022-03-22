@@ -2,7 +2,7 @@ import streamlit as st
 import preprocessor
 import helper
 from PIL import Image
-import matplotlib.pyplot as plt
+import math
 
 img = Image.open('./images/dataanalysis.png')
 
@@ -33,7 +33,7 @@ if uploaded_file is not None:
     most_common_words, words_count = helper.most_used_words(selected_user, store)
     most_common_emojis, emojis_count = helper.most_used_emojis(selected_user, store)
 
-    most_active_user_count = st.slider("Enter Number of Most Active Users to be Displayed(When 'All' is Selected)", min_value = 0, max_value = len(uni), value = int(len(uni)/2))
+    most_active_user_count = st.slider("Enter Number of Most Active Users to be Displayed(When 'All' is Selected)", min_value = 0, max_value = len(uni), value = int(len(uni)/(math.exp(math.sqrt(len(uni)/100)))))
     st.write(most_active_user_count)  
 
     most_used_msg_count = st.slider("Enter Number of Most Used Words to be Displayed", min_value = 0, max_value = helper.find_max_word_count(words_count), value = int(helper.find_max_word_count(words_count)/3))
