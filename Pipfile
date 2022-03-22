@@ -14,6 +14,8 @@ urlextract = "*"
 plotly = "*"
 cufflinks = "*"
 wordcloud = "*"
+emoji = "*"
+counter = "*"
 
 [dev-packages]
 

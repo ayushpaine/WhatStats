@@ -7,6 +7,7 @@ from wordcloud import WordCloud, STOPWORDS
 from PIL import Image
 from collections import Counter
 import pandas as pd
+import emoji
 
 extract = URLExtract()
 
@@ -27,7 +28,7 @@ def fetch_stats(selected_user, dataset, file_name):
         for message in modified_dataset['message']:
             links.extend(extract.find_urls(message))
 
-        st.title("Overall Statistics for" + " " + "chat with" + " " +file_name[19:-4])
+        st.title("Overall Statistics for" + " " + "the Chat")
 
         return number_of_messages, words, number_of_media, modified_dataset, links
     
@@ -48,7 +49,7 @@ def fetch_stats(selected_user, dataset, file_name):
         for message in modified_dataset['message']:
             links.extend(extract.find_urls(message))
 
-        st.title("Statistics for"+ " " + selected_user +" "+ "in Chat with" + " " + file_name[19:-4])
+        st.title("Statistics for"+ " " + selected_user +" "+ "in the Chat")
 
         return number_of_messages, words, number_of_media, modified_dataset, links
         
@@ -86,12 +87,28 @@ def most_used_words(selected_user, store):
     for message in store['message']:
         for word in message.split():
             if word not in stopwords:
-                words_count.append(word)
+                if word not in emoji.UNICODE_EMOJI['en']:
+                    words_count.append(word)
             
     most_common_words = pd.DataFrame(Counter(words_count).most_common(len(words_count)))
     most_common_words.columns = ["Word", "Count"]
 
     return most_common_words, words_count
+
+def most_used_emojis(selected_user, store):
+    if selected_user != 'All':
+        store = store[store['user'] == selected_user]
+
+    emojis_count = []
+
+    for message in store['message']:
+        emojis_count.extend([c for c in message  if c in emoji.UNICODE_EMOJI['en']])
+
+    most_common_emojis = pd.DataFrame(Counter(emojis_count).most_common(len(emojis_count)))
+    most_common_emojis.columns = ["Emoji", "Count"]
+
+    return most_common_emojis, emojis_count
+
         
 def find_max_word_count(words_count):
 
@@ -100,8 +117,25 @@ def find_max_word_count(words_count):
     else :
         return len(words_count)
 
+def find_max_emoji_count(emojis_count):
+
+    if len(emojis_count) > 30:
+        return 30
+    else :
+        return len(emojis_count)
+
+
 def most_common_words_input_restricted(most_common_words, most_used_msg_count):
 
     most_common_words = most_common_words.iloc[0:most_used_msg_count]
 
     return most_common_words
+
+def most_common_emojis_input_restricted(most_common_emojis, most_used_emoji_count):
+
+    most_common_emojis = most_common_emojis.iloc[0:most_used_emoji_count]
+
+    return most_common_emojis
+
+
+
