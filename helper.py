@@ -1,9 +1,7 @@
 import numpy as np
-from sklearn import datasets
 import streamlit as st
 from urlextract import URLExtract
 import plotly.express as px
-from wordcloud import WordCloud, STOPWORDS
 from PIL import Image
 from collections import Counter
 import pandas as pd
