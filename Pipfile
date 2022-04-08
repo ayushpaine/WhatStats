@@ -16,6 +16,7 @@ cufflinks = "*"
 wordcloud = "*"
 emoji = "*"
 counter = "*"
+streamlit-lottie = "*"
 
 [dev-packages]
 

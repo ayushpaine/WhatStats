@@ -8,6 +8,7 @@ from PIL import Image
 from collections import Counter
 import pandas as pd
 import emoji
+import math
 
 extract = URLExtract()
 
@@ -57,8 +58,8 @@ def fetch_stats(selected_user, dataset, file_name):
 
 def plot_bar_graph(uni, most_active_user_count):
     
-    fig = px.bar(uni.iloc[0:most_active_user_count], x='Count',
-                         y='User_short', text='Count', height = 900, width = 1300, hover_data = {
+    fig = px.bar(uni.iloc[len(uni) - most_active_user_count:len(uni)], x='Count',
+                         y='User_short', text='Count',height=math.log(most_active_user_count, (2 if most_active_user_count < 20 else 3) if most_active_user_count < 50 else 3.5)*math.pow(most_active_user_count, 1/(1.5*most_active_user_count))*math.pow(most_active_user_count,1)*10, width = 1300, hover_data = {
                              'User_short': False,
                              'User': True,
                              'Count': True
@@ -73,6 +74,8 @@ def plot_bar_graph(uni, most_active_user_count):
     fig.update_layout(xaxis_title_text="")
     fig.update_layout(margin=dict(l= 100, r=0, t=30, b=50))
     st.plotly_chart(fig, use_container_width=True)
+
+
 
 def most_used_words(selected_user, store):
 
